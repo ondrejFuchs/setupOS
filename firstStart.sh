@@ -1,7 +1,7 @@
 #!/bin/bash  
 # Script for setup Raspbian to connect by SSH
 cp /home/pc/Dropbox/DP/konfigurace/wifi/wpa_supplicant.conf /media/pc/rootfs/etc/wpa_supplicant/
-
+cp /home/pc/Dropbox/DP/konfigurace/wifi/wpa_supplicant.conf /media/pc/boot/
 cat <<EOT > /media/pc/rootfs/etc/rc.local
 #!/bin/sh -e
 #
