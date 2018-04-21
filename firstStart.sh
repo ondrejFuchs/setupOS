@@ -1,8 +1,61 @@
 #!/bin/bash  
 # Script for setup Raspbian to connect by SSH
-#cp /home/pc/Dropbox/DP/konfigurace/wifi/wpa_supplicant.conf /media/pc/rootfs/etc/wpa_supplicant/
-cp /home/pc/Dropbox/DP/konfigurace/wifi/wpa_supplicant.conf /media/pc/boot/
-cp /home/pc/Dropbox/DP/konfigurace/wifi/ssh /media/pc/boot/
+#cp /home/pc/Dropbox/DP/konfigurace/wifi/wpa_supplicant.conf /media/pc/boot/
+#cp /home/pc/Dropbox/DP/konfigurace/wifi/ssh /media/pc/boot/
+
+cp wpa_supplicant.conf /media/pc/boot/
+cp ssh /media/pc/boot/
+#ID1="c7cb7e34"
+
+SUBSTRING=$(sudo fdisk -l /dev/sdc | grep '^Disk identifier:')
+stringarray=($SUBSTRING)
+ID1=${stringarray[2]:2}
+
+sudo parted -m /dev/sdc print free
+echo "Start (MB)?"
+read start
+echo "End (GB)?"
+read end
+echo $start"MB" $end"GB"
+sudo parted -m /dev/sdc mkpart primary $start"MB" $end"GB"
+sudo mkfs.xfs  /dev/sdc3
+SUBSTRING=$(sudo fdisk -l /dev/sdc | grep '^Disk identifier:')
+stringarray=($SUBSTRING)
+ID2=${stringarray[2]:2}
+sed -i -e 's/'"$ID1"'/'"$ID2"'/g' /media/pc/boot/cmdline.txt
+sed -i -e 's/'"$ID1"'/'"$ID2"'/g' /media/pc/rootfs/etc/fstab
+
+input="/media/pc/boot/cmdline.txt"
+one="init=/usr/lib/raspi-config/init_resize.sh"
+two="quiet"
+while read line 
+do 
+  line=$(printf '%s\n' "${line//$one/}")
+  line=$(printf '%s\n' "${line//$two/}")
+  echo $line > /media/pc/boot/cmdline.txt
+done <$input 
+
+SUBSTRING=$(blkid /dev/sdc3)
+stringarray=($SUBSTRING)
+one=${stringarray[1]:5}
+UUID=$(echo "${one//\"}")
+echo "UUID=$UUID"  "/mnt/xfsdata/ xfs defaults 0 0" >> /media/pc/rootfs/etc/fstab
+mkdir /media/pc/rootfs/mnt/xfsdata
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #cat <<EOT > /media/pc/rootfs/etc/rc.local
 #!/bin/sh -e
 
