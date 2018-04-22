@@ -1,8 +1,9 @@
 #!/bin/bash  
-# Script for setup Raspbian to connect by SSH
-#cp /home/pc/Dropbox/DP/konfigurace/wifi/wpa_supplicant.conf /media/pc/boot/
-#cp /home/pc/Dropbox/DP/konfigurace/wifi/ssh /media/pc/boot/
+###
+# Script for setup Raspbian before first start.
+#
 
+# Wi-Fi and SSH configuration
 cp wpa_supplicant.conf /media/pc/boot/
 cp ssh /media/pc/boot/
 #ID1="c7cb7e34"
@@ -10,7 +11,7 @@ cp ssh /media/pc/boot/
 SUBSTRING=$(sudo fdisk -l /dev/sdc | grep '^Disk identifier:')
 stringarray=($SUBSTRING)
 ID1=${stringarray[2]:2}
-
+# Make new partition with XFS file system
 sudo parted -m /dev/sdc print free
 echo "Start (MB)?"
 read start
@@ -22,9 +23,10 @@ sudo mkfs.xfs  /dev/sdc3
 SUBSTRING=$(sudo fdisk -l /dev/sdc | grep '^Disk identifier:')
 stringarray=($SUBSTRING)
 ID2=${stringarray[2]:2}
+# After changes we must edit cmdline.txt and fstab
 sed -i -e 's/'"$ID1"'/'"$ID2"'/g' /media/pc/boot/cmdline.txt
 sed -i -e 's/'"$ID1"'/'"$ID2"'/g' /media/pc/rootfs/etc/fstab
-
+# Disable auto resize of partition after first boot
 input="/media/pc/boot/cmdline.txt"
 one="init=/usr/lib/raspi-config/init_resize.sh"
 two="quiet"
@@ -34,7 +36,7 @@ do
   line=$(printf '%s\n' "${line//$two/}")
   echo $line > /media/pc/boot/cmdline.txt
 done <$input 
-
+# Mount new partition to /mnt/xfsdata
 SUBSTRING=$(blkid /dev/sdc3)
 stringarray=($SUBSTRING)
 one=${stringarray[1]:5}
