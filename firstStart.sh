@@ -7,17 +7,23 @@
 cp wpa_supplicant.conf /media/pc/boot/
 cp ssh /media/pc/boot/
 #ID1="c7cb7e34"
-
 SUBSTRING=$(sudo fdisk -l /dev/sdc | grep '^Disk identifier:')
 stringarray=($SUBSTRING)
 ID1=${stringarray[2]:2}
+# Set partition
+lsblk
+read -e -p "Set partition (sda, sdb, sdc ect.): " -i "sdc" part
+echo "/dev/"$part
+# Resize rootfs partition 
+sudo parted -m /dev/$part print free
+read -e -p "Set end: " -i "4000" end
+sudo parted -m /dev/$part resizepart 2 Yes $end"MB"
+sudo resize2fs /dev/$part"2" $end"M"
+
 # Make new partition with XFS file system
 sudo parted -m /dev/sdc print free
-echo "Start (MB)?"
-read start
-echo "End (GB)?"
-read end
-echo $start"MB" $end"GB"
+read -e -p "Set start (MB): " -i "4001" start
+read -e -p "Set end (GB): " -i "15,6" end
 sudo parted -m /dev/sdc mkpart primary $start"MB" $end"GB"
 sudo mkfs.xfs  /dev/sdc3
 SUBSTRING=$(sudo fdisk -l /dev/sdc | grep '^Disk identifier:')
@@ -45,47 +51,5 @@ echo "UUID=$UUID"  "/mnt/xfsdata/ xfs defaults 0 0" >> /media/pc/rootfs/etc/fsta
 mkdir /media/pc/rootfs/mnt/xfsdata
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-#cat <<EOT > /media/pc/rootfs/etc/rc.local
-#!/bin/sh -e
-
- #rc.local
-
- #This script is executed at the end of each multiuser runlevel.
- #Make sure that the script will "exit 0" on success or any other
- #value on error.
-
- #In order to enable or disable this script just change the execution
- #bits.
-
- #By default this script does nothing.
-
- #Print the IP address
-#_IP=\$(hostname -I) || true
-#if [ "\$_IP" ]; then
-  #printf "My IP address is %s\n" "\$_IP"
-#fi
-
-#sudo systemctl enable ssh
-#sudo systemctl start ssh
-#exit 0
-#EOT
-# Tohle pomocí ansible
-#mkdir /media/pc/rootfs/home/pi/.ssh/
-#cp /home/pc/Dropbox/DP/konfigurace/wifi/authorized_keys /media/pc/rootfs/home/pi/.ssh/
-#chmod 700 /media/pc/rootfs/home/pi/.ssh/
-#chmod 600 /media/pc/rootfs/home/pi/.ssh/authorized_keys
 
 
