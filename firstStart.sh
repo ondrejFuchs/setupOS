@@ -49,6 +49,9 @@ one=${stringarray[1]:5}
 UUID=$(echo "${one//\"}")
 echo "UUID=$UUID"  "/mnt/xfsdata/ xfs defaults 0 0" >> /media/pc/rootfs/etc/fstab
 mkdir /media/pc/rootfs/mnt/xfsdata
+# Dataplicity
+#sudo cp mass-install-dp /media/pc/rootfs/etc/network/if-up.d/
+#sudo chmod 755 /media/pc/rootfs/etc/network/if-up.d/mass-install-dp
 
 
 
