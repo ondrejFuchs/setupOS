@@ -25,7 +25,7 @@ sudo parted -m /dev/sdc print free
 read -e -p "Set start (MB): " -i "4001" start
 read -e -p "Set end (GB): " -i "15,6" end
 sudo parted -m /dev/sdc mkpart primary $start"MB" $end"GB"
-sudo mkfs.xfs  /dev/sdc3
+sudo mkfs.xfs -f /dev/sdc3
 SUBSTRING=$(sudo fdisk -l /dev/sdc | grep '^Disk identifier:')
 stringarray=($SUBSTRING)
 ID2=${stringarray[2]:2}
