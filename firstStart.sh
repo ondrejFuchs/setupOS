@@ -10,7 +10,6 @@ cp ssh /media/pc/boot/
 lsblk
 read -e -p "Set partition (sda, sdb, sdc ect.): " -i "sdc" part
 part3=$(echo $part'3')
-#echo $part3
 
 SUBSTRING=$(sudo fdisk -l /dev/$part | grep '^Disk identifier:')
 stringarray=($SUBSTRING)
@@ -31,9 +30,11 @@ sudo mkfs.xfs -f /dev/$part3
 SUBSTRING=$(sudo fdisk -l /dev/$part | grep '^Disk identifier:')
 stringarray=($SUBSTRING)
 ID2=${stringarray[2]:2}
+
 # After changes we must edit cmdline.txt and fstab
 sed -i -e 's/'"$ID1"'/'"$ID2"'/g' /media/pc/boot/cmdline.txt
 sed -i -e 's/'"$ID1"'/'"$ID2"'/g' /media/pc/rootfs/etc/fstab
+
 # Disable auto resize of partition after first boot
 input="/media/pc/boot/cmdline.txt"
 one="init=/usr/lib/raspi-config/init_resize.sh"
@@ -44,6 +45,7 @@ do
   line=$(printf '%s\n' "${line//$two/}")
   echo $line > /media/pc/boot/cmdline.txt
 done <$input 
+
 # Mount new partition to /mnt/xfsdata
 SUBSTRING=$(blkid /dev/$part3)
 #stringarray=($SUBSTRING)
@@ -52,11 +54,12 @@ SUBSTRING=$(blkid /dev/$part3)
 #echo "UUID=$UUID"  "/mnt/xfsdata/ xfs defaults 0 0" >> /media/pc/rootfs/etc/fstab
 sudo cryptsetup -c aes-xts-plain64 -s 512 -q luksFormat /dev/$part3 --key-file keyfile
 mkdir /media/pc/rootfs/mnt/xfsdata
+
 # Dataplicity
 sudo cp mass-install-dp /media/pc/rootfs/etc/network/if-up.d/
-sudo chmod 755 /media/pc/rootfs/etc/network/if-up.d/mass-install-dp
-echo "allow-hotplug lo" >> /media/pc/rootfs/etc/network/interfaces
-echo "iface lo inet loopback" >> /media/pc/rootfs/etc/network/interfaces
+sudo chmod 555 /media/pc/rootfs/etc/network/if-up.d/mass-install-dp
+# Extension of first boot time and wait to install dataplicity
+sudo cp networking.service /media/pc/rootfs/lib/systemd/system/
 echo "Finish setup OS."
 
 

@@ -9,14 +9,14 @@ limit=60
 retry=0
 
 #Don't bother to run when lo is configured
-if [ "$IFACE" = lo ]; then
-    exit 0
-fi
+#if [ "$IFACE" = lo ]; then
+    #exit 0
+#fi
 
 #Only run from ifup
-if [ "$MODE" != start ]; then
-    exit 0
-fi
+#if [ "$MODE" != start ]; then
+    #exit 0
+#fi
 
 if [ ! -e /opt/dataplicity/mass-install-hostname ]; then
     echo "Configuring hostname..." >> $LOG_FILE 2>&1
@@ -27,6 +27,8 @@ if [ ! -e /opt/dataplicity/mass-install-hostname ]; then
     if [ -z $rpi_serial ]; then
   echo "Raspberry Pi serial number not found" >> $LOG_FILE 2>&1
     else
+  rpi_serial="dev-"$(echo $rpi_serial | sed 's/^0*//')
+  
   echo $rpi_serial | sudo tee /etc/hostname
   
   sudo sed -i '$d' /etc/hosts
@@ -34,7 +36,7 @@ if [ ! -e /opt/dataplicity/mass-install-hostname ]; then
   
   sudo mkdir /opt/dataplicity
   sudo touch /opt/dataplicity/mass-install-hostname
-  
+  sleep 3
   echo "Rebooting..." >> $LOG_FILE 2>&1
   sudo reboot
     fi
@@ -53,9 +55,10 @@ if [ ! -e /opt/dataplicity/tuxtunnel/auth ]; then
     done
        
     echo "Dataplicity will now be installed..." >> $LOG_FILE 2>&1
-
+    sudo timedatectl set-ntp true
+    sudo timedatectl
     /bin/sh -c "curl -k $INSTALL_URL" >> $LOG_FILE 2>&1
-    
+    sleep 30
     #Self deletion (cleanup)
-    /bin/sh -c "sudo rm /etc/network/if-up.d/mass-install-dp /opt/dataplicity/mass-install-hostname"
+    #/bin/sh -c "sudo rm /etc/network/if-up.d/mass-install-dp /opt/dataplicity/mass-install-hostname"
 fi
